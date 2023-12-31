@@ -2,6 +2,8 @@ const itemForm = document.querySelector('#item-form');
 const itemList = document.querySelector('.items');
 const clearAllBtn = document.querySelector('#clear');
 const filter = document.querySelector('.filter');
+const formInput = document.querySelector('.form-input');
+
 
 function displayItems(){
     const itemsFromLocalStorage = getItemsFromLocalStorage();
@@ -9,10 +11,31 @@ function displayItems(){
     resetUI();
 }
 
-function addItem(e){
+function onFormSubmit(e){
     e.preventDefault();
-    formInput = document.querySelector('.form-input');
+    if (e.target.textContent.trim() == 'Add Item'){
+        addItem();
+    }else{
+        updateItem();
+    }
+}
+
+function updateItem(){
+    const oldItem = document.querySelector('.edit-mode');
+    oldItem.remove();
+    removeItemFormLocalStorage(oldItem.textContent);
+    addItem();
+    resetUI();
+}
+
+
+function addItem(){
+    const formInput = document.querySelector('.form-input');
     if (formInput.value){
+        // if (itemExists()){
+        //     alert('This item already exists');
+        //     return;
+        // }
         addItemToDom(formInput.value);
         addItemToLocalStorage(formInput.value);
         formInput.value = '';
@@ -54,7 +77,22 @@ function getItemsFromLocalStorage(){
 function onItemClick(e){
     if (e.target.tagName === 'I'){
         removeItem(e.target.parentElement.parentElement);
+    }else {
+        setItemToUpdate(e.target)
     }
+}
+
+function setItemToUpdate(item){
+    const items = document.querySelectorAll('li')
+    items.forEach(i =>i.className = '');
+    item.className = 'edit-mode';
+    formInput.value = item.textContent
+
+    const addItemBtn = document.querySelector('.btn');
+    addItemBtn.parentElement.innerHTML = `<button type="submit" class="btn">
+        <i class="fa-solid fa-edit"></i> Update Item
+    </button>`
+
 }
 
 function removeItem(item){
@@ -67,7 +105,6 @@ function removeItemFormLocalStorage(item){
     let itemsFromLocalStorage = getItemsFromLocalStorage();
     itemsFromLocalStorage = itemsFromLocalStorage.filter(i => i!==item);
     localStorage.setItem('items', JSON.stringify(itemsFromLocalStorage));
-
 }
 
 function clearAllItems(e){
@@ -76,17 +113,6 @@ function clearAllItems(e){
     }
     localStorage.removeItem('items');
     resetUI();
-}
-
-function resetUI(){
-    if (itemList.children.length === 0){
-        clearAllBtn.style.display = 'none';
-        filter.style.display = 'none';
-    }else{
-        clearAllBtn.style.display = 'block';
-        filter.style.display = 'block';
-        filter.firstElementChild.value = '';
-    }
 }
 
 function filterItems(e){
@@ -100,10 +126,28 @@ function filterItems(e){
     })
 }
 
-document.addEventListener('DOMContentLoaded', displayItems);
-itemForm.addEventListener('submit', addItem);
-itemList.addEventListener('click', onItemClick);
-clearAllBtn.addEventListener('click', clearAllItems);
-filter.addEventListener('input', filterItems);
+function resetUI(){
+    const addItemBtn = document.querySelector('.btn');
+    addItemBtn.parentElement.innerHTML = `<button type="submit" class="btn">
+        <i class="fa-solid fa-plus"></i> Add Item
+    </button>`
+    if (itemList.children.length === 0){
+        clearAllBtn.style.display = 'none';
+        filter.style.display = 'none';
+    }else{
+        clearAllBtn.style.display = 'block';
+        filter.style.display = 'block';
+        filter.firstElementChild.value = '';
+    }
+}
 
-resetUI();
+function init(){
+    document.addEventListener('DOMContentLoaded', displayItems);
+    itemForm.addEventListener('submit', onFormSubmit);
+    itemList.addEventListener('click', onItemClick);
+    clearAllBtn.addEventListener('click', clearAllItems);
+    filter.addEventListener('input', filterItems);
+    resetUI();
+}
+
+init();
