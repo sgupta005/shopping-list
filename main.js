@@ -4,7 +4,6 @@ const clearAllBtn = document.querySelector('#clear');
 const filter = document.querySelector('.filter');
 const formInput = document.querySelector('.form-input');
 
-
 function displayItems(){
     const itemsFromLocalStorage = getItemsFromLocalStorage();
     itemsFromLocalStorage.forEach((item)=> addItemToDom(item));
@@ -21,25 +20,42 @@ function onFormSubmit(e){
 }
 
 function updateItem(){
+    //Removing edit-mode class to make sure that any item dosen't get deleted accidently
+    const items = document.querySelectorAll('li')
+    items.forEach(i =>i.className = '');
+
+    //Deleting old item
     const oldItem = document.querySelector('.edit-mode');
-    oldItem.remove();
-    removeItemFormLocalStorage(oldItem.textContent);
-    addItem();
+    if (oldItem){
+        removeItemFormLocalStorage(oldItem.textContent);
+    }
+
+    //Adding new item
+    if (addItem()){
+        oldItem.remove();
+    }
+
     resetUI();
 }
 
+function checkIfItemExists(item){
+    return JSON.parse(localStorage.getItem('items')).includes(item);
+
+}
 
 function addItem(){
     const formInput = document.querySelector('.form-input');
     if (formInput.value){
-        // if (itemExists()){
-        //     alert('This item already exists');
-        //     return;
-        // }
-        addItemToDom(formInput.value);
+        if (checkIfItemExists(formInput.value)){
+            alert('This item already exists');
+            formInput.value = '';
+            return false;
+        }
         addItemToLocalStorage(formInput.value);
+        addItemToDom(formInput.value);
         formInput.value = '';
         resetUI();
+        return true;
     }
 }
 
@@ -83,11 +99,15 @@ function onItemClick(e){
 }
 
 function setItemToUpdate(item){
+    //Making sure that more than one items do not have edit-mode at the same time
     const items = document.querySelectorAll('li')
     items.forEach(i =>i.className = '');
+
+    //Adding edit-mode class to the item which is to be updated
     item.className = 'edit-mode';
     formInput.value = item.textContent
 
+    //Changing add btn to update btn
     const addItemBtn = document.querySelector('.btn');
     addItemBtn.parentElement.innerHTML = `<button type="submit" class="btn">
         <i class="fa-solid fa-edit"></i> Update Item
