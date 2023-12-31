@@ -1,6 +1,5 @@
 const itemForm = document.querySelector('#item-form');
 const itemList = document.querySelector('.items');
-const itemsArray = Array.from(itemList.children);
 const clearAllBtn = document.querySelector('#clear');
 const filter = document.querySelector('.filter');
 
@@ -50,14 +49,15 @@ function resetUI(){
     }else{
         clearAllBtn.style.display = 'block';
         filter.style.display = 'block';
+        filter.firstElementChild.value = '';
     }
 }
 
 function filterItems(e){
-    itemsArray.forEach(item=>{
+    const items = document.querySelectorAll('li');
+    items.forEach(item=>{
         if (!item.textContent.toLowerCase().includes(e.target.value.toLowerCase())){
             item.style.display = 'none';
-            console.log(itemsArray);
         }else{
             item.style.display = 'flex';
         }
